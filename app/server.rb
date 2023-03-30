@@ -1,6 +1,6 @@
 require "socket"
 
-class YourRedisServer
+class RedisServer
   def initialize(port)
     @port = port
   end
@@ -15,4 +15,4 @@ class YourRedisServer
   end
 end
 
-YourRedisServer.new(6379).start
+RedisServer.new(6379).start
