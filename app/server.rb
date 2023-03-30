@@ -6,12 +6,37 @@ class RedisServer
   end
 
   def start
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    puts("Logs from your program will appear here!")
+    puts("Starting Redis server!")
 
-    # Uncomment this block to pass the first stage
     server = TCPServer.new(@port)
-    client = server.accept
+
+    loop do
+      client = server.accept
+      raw_data = client.recv(1024)
+      command = parse_request(raw_data)
+      response = execute_command(command)
+      client.puts response
+      client.close
+    end
+  end
+
+  private
+
+  def parse_request(raw_data)
+    raw_data.split("\r\n").last
+  end
+
+  def execute_command(command)
+    case command
+    when "ping"
+      ping_command
+    else
+      "Command not found"
+    end
+  end
+
+  def ping_command
+    "+PONG\r\n"
   end
 end
 
