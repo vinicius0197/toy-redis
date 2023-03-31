@@ -9,22 +9,27 @@ class RedisServer
     puts("Starting Redis server!")
 
     server = TCPServer.new(@port)
-    client = server.accept
+    sockets = [server]
 
     loop do
-      begin
-        if client.closed?
-          puts "Client closed the connection"
-          break
+      ready_sockets, _, _ = IO.select(sockets)
+      ready_sockets.each do |socket|
+        if socket == server
+          client = server.accept
+          puts "New client connected: #{client}"
+          sockets << client
+        else
+          begin
+            data = socket.read_nonblock(1024)
+            puts "Received data"
+            command = parse_request(data)
+            response = execute_command(command)
+            socket.puts response
+          rescue EOFError
+            puts "Client disconnected: #{socket}"
+            sockets.delete(socket)
+          end
         end
-
-        raw_data = client.recv(1024)
-        command = parse_request(raw_data)
-        response = execute_command(command)
-        client.puts response
-      rescue Errno::ECONNRESET
-        puts "Client closed the connection"
-        client.close
       end
     end
   end
