@@ -9,15 +9,16 @@ class RedisServer
     puts("Starting Redis server!")
 
     server = TCPServer.new(@port)
+    client = server.accept
 
     loop do
-      client = server.accept
       raw_data = client.recv(1024)
       command = parse_request(raw_data)
       response = execute_command(command)
       client.puts response
-      client.close
     end
+
+    client.close
   end
 
   private
