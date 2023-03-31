@@ -31,12 +31,16 @@ class RedisServer
     when "ping"
       ping_command
     else
-      "Command not found"
+      error_command(command)
     end
   end
 
   def ping_command
     "+PONG\r\n"
+  end
+
+  def error_command(command)
+    "-Unknown command #{command}\r\n"
   end
 end
 
