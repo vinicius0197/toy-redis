@@ -12,13 +12,21 @@ class RedisServer
     client = server.accept
 
     loop do
-      raw_data = client.recv(1024)
-      command = parse_request(raw_data)
-      response = execute_command(command)
-      client.puts response
-    end
+      begin
+        if client.closed?
+          puts "Client closed the connection"
+          break
+        end
 
-    client.close
+        raw_data = client.recv(1024)
+        command = parse_request(raw_data)
+        response = execute_command(command)
+        client.puts response
+      rescue Errno::ECONNRESET
+        puts "Client closed the connection"
+        client.close
+      end
+    end
   end
 
   private
