@@ -1,6 +1,7 @@
 require "socket"
 
 class RedisServer
+  include Commands
   def initialize(port)
     @port = port
   end
@@ -47,14 +48,6 @@ class RedisServer
     else
       error_command(command)
     end
-  end
-
-  def ping_command
-    "+PONG\r\n"
-  end
-
-  def error_command(command)
-    "-Unknown command #{command}\r\n"
   end
 end
 
