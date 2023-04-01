@@ -1,11 +1,15 @@
 require "socket"
 
+# This is the main class of this Redis implementation
+#
+# It is responsible for starting the server and handling the communication with the clients
 class RedisServer
   include Commands
   def initialize(port)
     @port = port
   end
 
+  # Starts the server and listens for incoming connections
   def start
     puts("Starting Redis server!")
 
@@ -37,10 +41,14 @@ class RedisServer
 
   private
 
+  # @param [String] raw_data
+  # @return [String]
   def parse_request(raw_data)
     raw_data.split("\r\n").last
   end
 
+  # @param [String] command
+  # @return [String] A string containing the response to the command in the Redis protocol format
   def execute_command(command)
     case command
     when "ping"
