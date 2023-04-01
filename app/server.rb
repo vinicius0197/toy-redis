@@ -1,4 +1,5 @@
 require "socket"
+require_relative "./commands"
 
 # This is the main class of this Redis implementation
 #
