@@ -1,5 +1,6 @@
 require "socket"
 require_relative "./commands"
+require_relative "./resp_parser"
 
 # This is the main class of this Redis implementation
 #
@@ -28,8 +29,8 @@ class RedisServer
           begin
             data = socket.read_nonblock(1024)
             puts "Received data"
-            command = parse_request(data)
-            response = execute_command(command)
+            command, arguments = RESPParser.new(data).decode
+            response = execute_command(command, arguments)
             socket.puts response
           rescue EOFError
             puts "Client disconnected: #{socket}"
@@ -42,18 +43,14 @@ class RedisServer
 
   private
 
-  # @param [String] raw_data
-  # @return [String]
-  def parse_request(raw_data)
-    raw_data.split("\r\n").last
-  end
-
   # @param [String] command
   # @return [String] A string containing the response to the command in the Redis protocol format
-  def execute_command(command)
+  def execute_command(command, arguments)
     case command
     when "ping"
       ping_command
+    when "echo"
+      echo_command(arguments)
     else
       error_command(command)
     end
