@@ -9,6 +9,7 @@ class RedisServer
   include Commands
   def initialize(port)
     @port = port
+    @data_store = {}
   end
 
   # Starts the server and listens for incoming connections
@@ -51,6 +52,11 @@ class RedisServer
       ping_command
     when "echo"
       echo_command(arguments)
+    when "set"
+      @data_store = set_command(arguments, @data_store)
+      "+OK\r\n"
+    when "get"
+      get_command(arguments, @data_store)
     else
       error_command(command)
     end

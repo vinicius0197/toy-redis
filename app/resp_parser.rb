@@ -10,6 +10,6 @@ class RESPParser
       item.start_with?("$")
     end
 
-    [command, arguments]
+    [command.downcase, arguments]
   end
 end
