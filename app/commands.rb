@@ -16,7 +16,7 @@ module Commands
     expiry = DEFAULT_EXPIRY_VALUE
 
     if arguments["EX"]
-      expiry = arguments["EX"]
+      expiry = Time.now.to_i + arguments["EX"].to_i
     end
 
     data_store[key] = { value: value, expiry: expiry }
@@ -25,6 +25,11 @@ module Commands
 
   def get_command(arguments, data_store)
     key = arguments.keys.first
+
+    if data_store[key].nil?
+      return "$-1\r\n"
+    end
+
     value = data_store[key][:value]
     "$#{value.bytesize}\r\n#{value}\r\n"
   end
