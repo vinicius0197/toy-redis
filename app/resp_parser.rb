@@ -6,8 +6,13 @@ class RESPParser
   end
 
   def decode
-    arguments_size, command, *arguments = encoded_data.split("\r\n").reject do |item|
+    arguments = {}
+    _, command, *key_value_pairs = encoded_data.split("\r\n").reject do |item|
       item.start_with?("$")
+    end
+
+    key_value_pairs.each_slice(2) do |key, value|
+      arguments[key] = value
     end
 
     [command.downcase, arguments]
