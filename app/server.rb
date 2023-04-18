@@ -6,12 +6,12 @@ require_relative "./resp_parser"
 #
 # It is responsible for starting the server and handling the communication with the clients
 class RedisServer
-  CLOCK_HZ = 5
+  CLOCK_HZ = 0.001
   include Commands
   def initialize(port)
     @port = port
     @data_store = {}
-    @next_clean_timestamp = Time.now.to_i + CLOCK_HZ
+    @next_clean_timestamp = Time.now.to_f + CLOCK_HZ
   end
 
   # Starts the server and listens for incoming connections
@@ -24,7 +24,7 @@ class RedisServer
     loop do
       expire_keys if should_expire?
 
-      ready_sockets, _, _ = IO.select(sockets, nil, nil, 1)
+      ready_sockets, _, _ = IO.select(sockets, nil, nil, 0.001)
       ready_sockets&.each do |socket|
         if socket == server
           client = server.accept
@@ -49,19 +49,17 @@ class RedisServer
   private
 
   def expire_keys
-    puts "Expiring keys..."
     @data_store.each do |key, entry|
       next if entry[:expiry] == 0
       if Time.now.to_i >= entry[:expiry]
+        puts "expired - #{key}"
         @data_store.delete(key)
       end
     end
-    @next_clean_timestamp = Time.now.to_i + CLOCK_HZ
-    puts "Keys expired..."
   end
 
   def should_expire?
-    Time.now.to_i >= @next_clean_timestamp
+    Time.now.to_f >= @next_clean_timestamp
   end
 
   # @param [String] command

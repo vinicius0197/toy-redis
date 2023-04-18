@@ -12,11 +12,17 @@ module Commands
 
   def set_command(arguments, data_store)
     key = arguments.keys.first
-    value = arguments[key]
+    value = arguments.delete(key)
     expiry = DEFAULT_EXPIRY_VALUE
 
-    if arguments["EX"]
-      expiry = Time.now.to_i + arguments["EX"].to_i
+    arguments = arguments.transform_keys(&:downcase)
+
+    if arguments["ex"]
+      expiry = Time.now.to_f + arguments["ex"].to_f
+    end
+
+    if arguments["px"]
+      expiry = Time.now.to_f + arguments["px"].to_f/1000
     end
 
     data_store[key] = { value: value, expiry: expiry }
@@ -27,6 +33,10 @@ module Commands
     key = arguments.keys.first
 
     if data_store[key].nil?
+      return "$-1\r\n"
+    end
+
+    if data_store[key][:expiry] != 0 && data_store[key][:expiry] < Time.now.to_f
       return "$-1\r\n"
     end
 
